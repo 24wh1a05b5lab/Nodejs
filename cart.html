@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping Cart</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<script>
+// ✅ Protect page (redirect if not logged in)
+if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+</script>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #E8F5E9;
+}
+
+header {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.container {
+    margin-top: 30px;
+}
+
+.confirm-box {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.result-message {
+    margin-top: 20px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.logout-btn {
+    display: none;
+    margin-top: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>My E-Commerce Store</h1>
+<a href="catalog.html" class="btn btn-light mt-2">Back to Catalog</a>
+</header>
+
+<div class="container">
+<h2 class="text-center mb-4">Shopping Cart</h2>
+
+<div class="table-responsive">
+<table class="table table-bordered">
+<thead class="table-success">
+<tr>
+<th>Product</th>
+<th>Quantity</th>
+<th>Price</th>
+<th>Total</th>
+<th>Remove</th>
+</tr>
+</thead>
+<tbody id="cartItems"></tbody>
+</table>
+</div>
+
+<div class="text-end">
+<h4>Total: $<span id="cartTotal">0.00</span></h4>
+<button class="btn btn-success" onclick="showConfirm()">
+    Proceed to Checkout
+</button>
+</div>
+
+<!-- Confirmation Box -->
+<div id="confirmBox" class="confirm-box text-center">
+    <h4>Do you want to confirm your order?</h4>
+    <button class="btn btn-primary me-2" onclick="confirmOrder()">Yes</button>
+    <button class="btn btn-danger" onclick="cancelOrder()">No</button>
+</div>
+
+<div id="resultMessage" class="result-message text-center"></div>
+
+<div class="text-center logout-btn" id="logoutSection">
+    <button class="btn btn-dark" onclick="logout()">
+        Logout
+    </button>
+</div>
+
+</div>
+
+<script>
+
+function loadCart() {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cartItems = document.getElementById('cartItems');
+    let cartTotal = 0;
+    cartItems.innerHTML = "";
+
+    cart.forEach(item => {
+        let row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>$${(item.price * item.quantity).toFixed(2)}</td>
+            <td>
+                <button class="btn btn-danger btn-sm"
+                    onclick="removeFromCart('${item.name}')">
+                    Remove
+                </button>
+            </td>
+        `;
+
+        cartItems.appendChild(row);
+        cartTotal += item.price * item.quantity;
+    });
+
+    document.getElementById('cartTotal').textContent = cartTotal.toFixed(2);
+}
+
+function removeFromCart(productName) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let updatedCart = cart.filter(item => item.name !== productName);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    loadCart();
+}
+
+function showConfirm() {
+    document.getElementById("confirmBox").style.display = "block";
+    document.getElementById("resultMessage").innerHTML = "";
+    document.getElementById("logoutSection").style.display = "none";
+}
+
+function confirmOrder() {
+    document.getElementById("confirmBox").style.display = "none";
+    document.getElementById("resultMessage").innerHTML =
+        "🎉 Order Confirmed Successfully!";
+    
+    localStorage.removeItem('cart');
+    loadCart();
+
+    document.getElementById("logoutSection").style.display = "block";
+}
+
+function cancelOrder() {
+    document.getElementById("confirmBox").style.display = "none";
+    document.getElementById("resultMessage").innerHTML =
+        "❌ Order Cancelled.";
+    
+    document.getElementById("logoutSection").style.display = "block";
+}
+
+function logout() {
+    // ✅ Remove login status
+    localStorage.removeItem("isLoggedIn");
+
+    // ✅ Redirect to logout page
+    window.location.href = "logout.html";
+}
+
+window.onload = loadCart;
+
+</script>
+
+</body>
+</html>
